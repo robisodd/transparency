@@ -53,7 +53,7 @@ static void init(void) {
   
   srand(time(NULL));
   dog_bitmap = gbitmap_create_with_resource(RESOURCE_ID_DOG);
-  build_shadow_table();
+  create_shadow_table();
   rect1 = GRect(50, 50, 60, 60);
   rect2 = GRect(10, 10, 70, 70);
   
@@ -62,6 +62,7 @@ static void init(void) {
 }
   
 static void deinit(void) {
+  destroy_shadow_table();
   gbitmap_destroy(dog_bitmap);
   window_destroy(main_window);
 }
