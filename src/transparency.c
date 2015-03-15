@@ -22,20 +22,39 @@ void build_shadow_table() {
   }
 }
 
+// #define combine_colors(color1, color2) ((shadowtable[((~color2)&0b11000000) + (color1&63)]&63) + shadowtable[color2])  // macro if you don't want to use the function
+
 uint8_t combine_colors(uint8_t color1, uint8_t color2) {
   return (shadowtable[((~color2)&0b11000000) + (color1&63)]&63) + shadowtable[color2];
 }
 
 void fill_rect(GContext *ctx, GRect rect, uint8_t color) {
   #ifdef PBL_COLOR
-    uint8_t bg_opacity = (~color)&0b11000000;
-    uint8_t* screen = ((uint8_t*)*(uint32_t*)ctx);
-    for(uint16_t y_addr=rect.origin.y*144, row=0; row<rect.size.h; y_addr+=144, row++)
-      for(uint16_t x_addr=rect.origin.x, x=0; x<rect.size.w; x_addr++, x++)
-        screen[y_addr+x_addr] = (shadowtable[bg_opacity + (screen[y_addr+x_addr]&63)]&63) + shadowtable[color];
-      //screen[y_addr+x_addr] = combine_colors(screen[y_addr+x_addr], color);
+    GBitmap* framebuffer = graphics_capture_frame_buffer(ctx);
+    if(framebuffer) {
+      uint8_t* screen = gbitmap_get_data(framebuffer);
+      for(uint16_t y_addr=rect.origin.y*144, row=0; row<rect.size.h; y_addr+=144, row++)
+        for(uint16_t x_addr=rect.origin.x, x=0; x<rect.size.w; x_addr++, x++)
+          screen[y_addr+x_addr] = combine_colors(screen[y_addr+x_addr], color);
+      graphics_release_frame_buffer(ctx, framebuffer);
+    }
   #else
     graphics_context_set_fill_color(ctx, color>>7);
     graphics_fill_rect(ctx, rect, 0, GCornerNone);
   #endif
 }
+
+// Same as above, but I like it better
+// void fill_rect(GContext *ctx, GRect rect, uint8_t color) {
+//   #ifdef PBL_COLOR
+//     uint8_t bg_opacity = (~color)&0b11000000;
+//     color = shadowtable[color]&63
+//     uint8_t* screen = ((uint8_t*)*(uint32_t*)ctx);
+//     for(uint16_t y_addr=rect.origin.y*144, row=0; row<rect.size.h; y_addr+=144, row++)
+//       for(uint16_t x_addr=rect.origin.x, x=0; x<rect.size.w; x_addr++, x++)
+//         screen[y_addr+x_addr] = shadowtable[bg_opacity + (screen[y_addr+x_addr]&63)] + color;
+//   #else
+//     graphics_context_set_fill_color(ctx, color>>7);
+//     graphics_fill_rect(ctx, rect, 0, GCornerNone);
+//   #endif
+// }
