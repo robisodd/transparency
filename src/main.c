@@ -4,8 +4,7 @@
 static Window *main_window;
 static Layer *root_layer;
 static GBitmap *dog_bitmap;
-static GRect rect1, rect2;
-uint8_t rect1_color=0b01100011, rect2_color=0b01111000;
+uint8_t rect1_color=0b01100011, rect2_color=0b01110000;
 
 // ------------------------------------------------------------------------ //
 //  Button Functions
@@ -30,8 +29,10 @@ void click_config_provider(void *context) {
 // ------------------------------------------------------------------------ //
 static void root_layer_update(Layer *me, GContext *ctx) {
   graphics_draw_bitmap_in_rect(ctx, dog_bitmap, GRect(0,0,144,168));
-  fill_rect(ctx, rect1, rect1_color);
-  fill_rect(ctx, rect2, rect2_color);
+  fill_rect(ctx, GRect(50, 50, 60, 60), rect1_color);
+  fill_rect(ctx, GRect(10, 10, 70, 120), rect2_color);
+  shadow_rect(ctx, GRect(0, 74, 144, 20), 0b01000000);  // shadow bar in the middle
+  
 }
   
 // ------------------------------------------------------------------------ //
@@ -54,8 +55,6 @@ static void init(void) {
   srand(time(NULL));
   dog_bitmap = gbitmap_create_with_resource(RESOURCE_ID_DOG);
   create_shadow_table();
-  rect1 = GRect(50, 50, 60, 60);
-  rect2 = GRect(10, 10, 70, 70);
   
   //Begin
   window_stack_push(main_window, true); // Display window (true = animated)
